@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content='width=device-width, initial-scale=1.0'/>
+        <title>Verify Credential</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    
+    <body>
+        <div class="container">
+            <h1> Verify Credential</h1>
+
+            <div class="upload-section">
+                <label for="fileInput"> Upload Document</label>
+                <input type="file" id="fileInput" />
+
+                <p>- or -</p>
+
+                <label for="hashInput">Enter Document Hash</label>
+                <input type="text" id="hashInput" placeholder="e.g., 0x123abc"/>
+            </div>
+
+            <button id="verifyBtn">Verify</button>
+
+            <div id="result" class="result-box hidden">
+                <h3>Verification Result</h3>
+                <p id="status">Checking...</p>
+                <pre id="details"></pre>
+            </div>
+
+        </div>
+
+        <script src="verify.js"></script>
+    </body>
+</html>
