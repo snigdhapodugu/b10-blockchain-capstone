@@ -10,15 +10,39 @@
 
     <nav class="triton-nav">
         <ul>
-            <li><a href="index.html">Verify a Document</a></li>
+            <li><a href="index.html">Home</a></li>
+
+            <li><a href="verify.html">Verify a Document</a></li>
             <li><a href="my_documents.html">My Documents</a></li>
             <li><a href="faculty_staff.html" class="active">Faculty/Staff</a></li>
+            
+            <li class="sign-in"><a href="#">Sign In</a></li>
         </ul>
     </nav>
+    <div class="mock-banner">
+        Mock Functionality: Integration with UC systems pending.
+    </div>
+    
     <div class="container">
-        <h1>Faculty/Staff Portal</h1>
-        <p>This is the portal for faculty and staff.</p>
+        <h1>Create Verifiable Document</h1>
+        <p>Select a student and a document to create a new verifiable credential on the blockchain.</p>
+
+        <div class="form-group">
+            <label for="studentSelect">1. Select Student</label>
+            <select id="studentSelect">
+                </select>
+        </div>
+
+        <div class="form-group">
+            <label for="documentSelect">2. Select Document</label>
+            <select id="documentSelect" disabled>
+                <option value="">-- Select a Student First --</option>
+                </select>
+        </div>
+
+        <button id="createDocBtn" class="uc-button">Create Verified Document</button>
     </div>
 
-    </body>
+    <script src="faculty_staff.js"></script>
+</body>
 </html>

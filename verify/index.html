@@ -3,40 +3,45 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Verify Credential</title>
+    <title>UC Verifiable Credentials</title>
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
     <nav class="triton-nav">
         <ul>
-            <li><a href="index.html" class="active">Verify a Document</a></li>
+            <li><a href="index.html" class="active">Home</a></li>
+            <li><a href="verify.html">Verify a Document</a></li>
             <li><a href="my_documents.html">My Documents</a></li>
             <li><a href="faculty_staff.html">Faculty/Staff</a></li>
+            <li class="sign-in"><a href="#">Sign In</a></li>
         </ul>
     </nav>
-    <div class="container">
-        <h1>VERIFY A DOCUMENT</h1>
 
-        <div class="upload-section">
-            <label for="fileInput">Upload Document</label>
-            <input type="file" id="fileInput" />
+    <div class="mock-banner">
+        Mock Functionality: Integration with UC systems pending.
+    </div>
+    
+    <div class="container" style="text-align: left;">
+        <h1>Welcome to UC Verifiable Credentials</h1>
+        
+        <p style="font-size: 1.1em; color: #555;">
+            This project is a proof-of-concept demonstrating how University of California academic records, like transcripts and degrees, can be secured and verified using blockchain technology.
+        </p>
 
-            <p>– or –</p>
+        <h3 style="margin-top: 2rem;">Project Goals</h3>
+        <p>
+            Our mission is to combat document fraud, reduce administrative overhead, and empower students by giving them permanent, verifiable, and tamper-proof ownership of their academic achievements.
+        </p>
 
-            <label for="hashInput">Enter Document Hash</label>
-            <input type="text" id="hashInput" placeholder="e.g., 0x123abc" />
-        </div>
-
-        <button id="verifyBtn">Verify</button>
-
-        <div id="result" class="result-box hidden">
-            <h3>Verification Result</h3>
-            <p id="status">Checking...</p>
-            <pre id="details"></pre>
+        <div class="form-group" style="margin-top: 2rem;">
+            <label>What would you like to do?</label>
+            
+            <a href="verify.html" class_comment="uc-button">Verify a Document</a>
+            <a href="faculty_staff.html" class_comment="uc-button">Faculty/Staff Portal</a>
+            <a href="my_documents.html" class_comment="uc-button">My Documents (Future)</a>
         </div>
     </div>
 
-    <script src="verify.js"></script>
-</body>
+    </body>
 </html>

@@ -61,16 +61,6 @@ body {
   margin: 2rem auto;
 }
 
-.upload-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin: 20px 0;
-  text-align: center;
-}
-
 .upload-section label {
   font-weight: bold;
 }
@@ -78,35 +68,17 @@ body {
 input[type="file"],
 input[type="text"] {
   width: 100%;
-  max-width: 500px;
-  max-height: 500px;       
   margin: 5px 0;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
-  text-align: center;
-  box-sizing: border-box;
+  box-sizing: border-box; 
+  font-size: 16px; 
 }
 
 p {
   margin: 10px 0;
   color: #888;
-}
-
-button {
-  margin-top: 10px;
-  width: 100%;
-  max-width: 320px;
-  padding: 10px;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #45a049;
 }
 
 .result-box {
@@ -119,7 +91,7 @@ button:hover {
   display: none;
 }
 
-/* 📱 Mobile tweaks */
+/* Mobile tweaks */
 @media (max-width: 480px) {
   .container {
     padding: 1.5rem;
@@ -131,4 +103,90 @@ button:hover {
   button {
     max-width: 100%;
   }
+}
+
+
+/* === NAVIGATION BAR TWEAKS === */
+
+/* This targets the <li> for the sign-in button */
+.triton-nav li.sign-in {
+  margin-left: auto; 
+  border-left: 1px solid #004268; 
+}
+
+/* Style the sign-in link differently (e.g., gold) */
+.triton-nav li.sign-in a {
+  background-color: #FFCD00; /* UCSD gold */
+  color: #182B49; /* UCSD dark blue */
+  border-right: none;
+}
+
+.triton-nav li.sign-in a:hover {
+  background-color: #f2c300; /* Slightly darker gold on hover */
+}
+
+/* Style for the "Mock Functionality" banner */
+.mock-banner {
+  background-color: #fffbe6; /* Pale yellow */
+  color: #594b00;
+  border: 1px solid #FFCD00; /* UCSD gold border */
+  padding: 10px 20px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* === FACULTY/STAFF PAGE STYLES === */
+
+/* Styles for the new form elements */
+.form-group {
+  text-align: left;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: #333;
+}
+
+/* Style for the dropdown menus */
+select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: #fff;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* Style for a disabled dropdown */
+select:disabled {
+  background-color: #f9f9f9;
+  cursor: not-allowed;
+  color: #999;
+}
+
+/* New button style to match UC blue */
+.uc-button {
+  margin-top: 10px;
+  width: 100%;
+  max-width: 320px;
+  padding: 12px;
+  background: #006a96; /* UCSD blue */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.uc-button:hover {
+  background: #004268; /* Darker blue on hover */
 }
