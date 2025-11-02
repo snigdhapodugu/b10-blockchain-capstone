@@ -1,14 +1,51 @@
 body {
   font-family: Arial, sans-serif;
-  background-color: #fafafa;
+  background-color: #f9f9f9;
   color: #333;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
   margin: 0;
-  padding: 20px;
   box-sizing: border-box;
+}
+
+/* Style the navigation bar itself */
+.triton-nav {
+  width: 100%;
+  background-color: #006a96; /* UCSD dark blue */
+  overflow: hidden;
+  border-bottom: 3px solid #ffcd00; /* UCSD gold accent */
+}
+
+/* Style the list container */
+.triton-nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex; /* Use flexbox for horizontal layout */
+  justify-content: flex-start; /* Align tabs to the left */
+}
+
+/* Style each navigation tab link */
+.triton-nav li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 20px;
+  text-decoration: none;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 14px;
+  border-right: 1px solid #005A9C; /* Lighter blue divider */
+}
+
+/* Style the tab on hover */
+.triton-nav li a:hover {
+  background-color: #004268; /* UCSD lighter blue */
+  /*004268*/
+}
+
+/* Style the ACTIVE tab (the page you are currently on) */
+.triton-nav li a.active {
+  background-color: #FFCD00; /* UCSD gold */
+  color: #182B49; /* UCSD dark blue */
 }
 
 .container {
@@ -21,6 +58,7 @@ body {
   max-height: 600px;      
   text-align: center;
   box-sizing: border-box;
+  margin: 2rem auto;
 }
 
 .upload-section {
