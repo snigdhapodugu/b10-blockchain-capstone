@@ -45,8 +45,16 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!file) {
         throw new Error("Select a document file to register.");
       }
-
-      const result = await registerDocument({ docId, file, uri });
+    
+      const result = await registerDocument({ 
+        docId, 
+        file, 
+        uri,
+        onTransactionSent: (txHash) => {
+          // Update status with block explorer link while transaction is pending
+          statusEl.innerHTML = `Registering document on-chain: <a href="https://sepolia.etherscan.io/tx/${txHash}" target="_blank" rel="noopener">${txHash}</a>`;
+        }
+      });
       const now = new Date().toLocaleString();
 
       statusEl.textContent = "✅ Document registered successfully.";
