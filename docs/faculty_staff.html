@@ -5,18 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Register Document</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="supabase-config.js"></script>
 </head>
 <body>
   <nav class="triton-nav">
     <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="verify.html">Verify a Document</a></li>
-      <li><a href="my_documents.html">My Documents</a></li>
-      <li><a href="faculty_staff.html" class="active">Faculty/Staff</a></li>
-      <li class="wallet">
-        <button id="walletButton" class="wallet-button">Connect Wallet</button>
-      </li>
+      <li><a href="admin.html">Profile</a></li>
+      <li><a href="faculty_staff.html" class="active">Register</a></li>
+      <li><a href="admin_verify.html">Verify</a></li>
+      <li><a href="admin_request.html">Request</a></li>
     </ul>
+    <div class="auth-right">
+      <button id="walletButton" class="wallet-button">Connect Wallet</button>
+      <button id="nav-logout" class="uc-button secondary" type="button">Sign Out</button>
+    </div>
   </nav>
 
   <main class="container">
@@ -31,6 +33,12 @@
         <label for="docIdInput">Document ID</label>
         <input type="text" id="docIdInput" placeholder="e.g., degree-2025-A12345678" autocomplete="off" />
         <small>Use a stable identifier (PID + document type works well).</small>
+      </div>
+
+      <div class="form-group">
+        <label for="studentIdInput">Student ID</label>
+        <input type="text" id="studentIdInput" placeholder="e.g., A12345678" autocomplete="off" />
+        <small>Required. Documents will be visible to this student account.</small>
       </div>
 
       <div class="form-group">

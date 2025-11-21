@@ -1,0 +1,36 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Profile</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="supabase-config.js"></script>
+</head>
+<body class="page admin-page">
+  <nav class="triton-nav">
+    <ul>
+      <li><a href="admin.html" class="active">Profile</a></li>
+      <li><a href="faculty_staff.html">Register</a></li>
+      <li><a href="admin_verify.html">Verify</a></li>
+      <li><a href="admin_request.html">Request</a></li>
+    </ul>
+    <div class="auth-right">
+      <button id="walletButton" class="wallet-button">Connect Wallet</button>
+      <button id="nav-logout" class="uc-button secondary" type="button">Sign Out</button>
+    </div>
+  </nav>
+
+  <main class="content">
+    <section class="card">
+      <h2>Pending Requests</h2>
+      <p class="muted">Admins can approve, deny, or issue documents. Issuance will hash the file and write to the blockchain.</p>
+      <div id="admin-warning" class="status warning hidden">Admin role required.</div>
+      <div id="pending-requests" class="list"></div>
+    </section>
+  </main>
+
+  <script type="module" src="js/adminPage.js"></script>
+</body>
+</html>
+

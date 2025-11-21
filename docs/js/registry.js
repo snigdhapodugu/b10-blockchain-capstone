@@ -222,7 +222,7 @@ function normaliseHash(hash) {
   }
   return value.toLowerCase();
 }
-//added onTransactionSent callback
+
 export async function registerDocument({ docId, file, docHash, uri = "", onTransactionSent }) {
   if (!isSessionConnected() || !currentAddress) {
     throw new Error("Connect your wallet to register a document.");
@@ -244,11 +244,13 @@ export async function registerDocument({ docId, file, docHash, uri = "", onTrans
 
   const contract = await ensureSignerContract();
   const tx = await contract.registerDocument(ethers.id(cleanId), hashValue, uri.trim());
-  //newline added
-  if(onTransactionSent && tx.hash) {
-    onTransactionSent(tx.hash);
+  if (typeof onTransactionSent === "function") {
+    try {
+      onTransactionSent(tx.hash);
+    } catch (err) {
+      console.warn("onTransactionSent callback failed:", err);
+    }
   }
-
   await tx.wait();
 
   rememberDocument({

@@ -1,104 +1,126 @@
-import {
-  bindWalletButton,
-  clearRememberedDocuments,
-  getRememberedDocuments,
-  rememberDocument,
-  removeRememberedDocument,
-  verifyDocument
-} from "./registry.js";
+import { verifyDocument } from "./registry.js";
+import { supabase, getSessionUser, getUserRole, signOut } from "./supabaseClient.js";
+import { listDocumentsByStudent } from "./documentsApi.js";
 
-const setupWalletButton = () => bindWalletButton(document.getElementById("walletButton"));
+const walletButton = document.getElementById("walletButton");
+const refreshBtn = document.getElementById("clearHistoryBtn");
+const historyTable = document.getElementById("historyTable");
+const verifyResult = document.getElementById("verifyResult");
+const verifyStatus = document.getElementById("verifyStatus");
+const verifyDetails = document.getElementById("verifyDetails");
+const navLogout = document.getElementById("nav-logout");
+let documents = [];
+let studentId = null;
 
+function disableWalletButton() {
+  if (walletButton) {
+    walletButton.disabled = true;
+    walletButton.textContent = "Admin-only wallet";
+    walletButton.classList.add("disabled");
+  }
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  setupWalletButton();
+async function ensureStudentWithId() {
+  const user = await getSessionUser();
+  if (!user || getUserRole(user) !== "student") {
+    window.location.href = "signin.html";
+    return null;
+  }
+  const sid = user.user_metadata?.studentId;
+  if (!sid) {
+    alert("Your account is missing a student ID. Please contact an admin.");
+    return null;
+  }
+  studentId = sid;
+  return user;
+}
 
-  const tableBody = document.querySelector("#historyTable tbody");
-  const resultBox = document.getElementById("verifyResult");
-  const statusEl = document.getElementById("verifyStatus");
-  const detailsEl = document.getElementById("verifyDetails");
-  const clearBtn = document.getElementById("clearHistoryBtn");
+function renderDocuments() {
+  const tbody = historyTable.querySelector("tbody");
+  tbody.innerHTML = "";
+  if (!documents.length) {
+    const row = document.createElement("tr");
+    row.className = "placeholder";
+    const cell = document.createElement("td");
+    cell.colSpan = 4;
+    cell.textContent = "No documents found for your account.";
+    row.appendChild(cell);
+    tbody.appendChild(row);
+    return;
+  }
 
-  const renderRows = () => {
-    const docs = getRememberedDocuments();
-    tableBody.innerHTML = "";
-    if (!docs.length) {
-      const row = document.createElement("tr");
-      row.classList.add("placeholder");
-      row.innerHTML = `<td colspan="4">No documents stored yet. Register or verify a document to see it here.</td>`;
-      tableBody.appendChild(row);
-      return;
-    }
+  documents.forEach((item, index) => {
+    const issued = item.issued_at ? new Date(item.issued_at).toLocaleString() : "-";
+    const txLink = item.tx_hash
+      ? `<a href="https://sepolia.etherscan.io/tx/${item.tx_hash}" target="_blank" rel="noopener">Transaction</a>`
+      : "";
+    const downloadLink = item.file_url
+      ? `<a href="${item.file_url}" target="_blank" rel="noopener">Download</a>`
+      : "";
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${item.doc_id}</td>
+      <td class="hash">${item.doc_hash}</td>
+      <td>${issued}</td>
+      <td class="actions">
+        <button data-action="verify" data-index="${index}">Verify</button>
+        ${downloadLink ? `<span class="dot"></span>${downloadLink}` : ""}
+        ${txLink ? `<span class="dot"></span>${txLink}` : ""}
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
 
-    docs.forEach((entry) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${entry.docId}</td>
-        <td class="hash">${entry.docHash}</td>
-        <td>${formatTimestamp(entry)}</td>
-        <td class="actions">
-          <button class="uc-button inline" data-action="verify">Verify</button>
-          <button class="uc-button inline subtle" data-action="remove">Remove</button>
-        </td>
-      `;
+async function handleTableClick(e) {
+  const action = e.target.dataset.action;
+  const idx = Number(e.target.dataset.index);
+  if (Number.isNaN(idx) || action !== "verify") return;
+  const entry = documents[idx];
+  if (!entry) return;
+  try {
+    const { match } = await verifyDocument({ docId: entry.doc_id, docHash: entry.doc_hash });
+    verifyResult.classList.remove("hidden");
+    verifyStatus.textContent = match ? "Blockchain record matches." : "No matching record found.";
+    verifyDetails.innerHTML = `
+      <dt>Document ID</dt><dd>${entry.doc_id}</dd>
+      <dt>Hash</dt><dd>${entry.doc_hash}</dd>
+    `;
+  } catch (err) {
+    alert(err.message || err);
+  }
+}
 
-      row.querySelector('[data-action="verify"]').addEventListener("click", async () => {
-        await handleVerify(entry);
-      });
+async function loadDocuments() {
+  try {
+    documents = await listDocumentsByStudent(studentId);
+    renderDocuments();
+  } catch (err) {
+    alert(err.message || err);
+  }
+}
 
-      row.querySelector('[data-action="remove"]').addEventListener("click", () => {
-        removeRememberedDocument(entry.docId, entry.docHash);
-        renderRows();
-      });
+async function init() {
+  disableWalletButton();
+  const user = await ensureStudentWithId();
+  if (!user) return;
 
-      tableBody.appendChild(row);
-    });
-  };
+  await loadDocuments();
 
-  const handleVerify = async (entry) => {
-    resultBox.classList.remove("hidden");
-    statusEl.textContent = "Verifying document...";
-    detailsEl.innerHTML = "";
-
-    try {
-      const result = await verifyDocument({ docId: entry.docId, docHash: entry.docHash });
-      const now = new Date().toLocaleString();
-
-      detailsEl.innerHTML = `
-        <dt>Document ID</dt><dd>${result.docId}</dd>
-        <dt>Document Hash</dt><dd class="hash">${result.docHash}</dd>
-        <dt>Checked At</dt><dd>${now}</dd>
-      `;
-
-      if (result.match) {
-        statusEl.textContent = "? Blockchain record matches.";
-        rememberDocument({ ...entry, verifiedAt: new Date().toISOString() });
-        renderRows();
-      } else {
-        statusEl.textContent = "?? No matching record found.";
-      }
-    } catch (error) {
-      console.error(error);
-      statusEl.textContent = `? ${error.message ?? error}`;
-    }
-  };
-
-  clearBtn.addEventListener("click", () => {
-    clearRememberedDocuments();
-    renderRows();
-    resultBox.classList.add("hidden");
+  refreshBtn?.addEventListener("click", (e) => {
+    e.preventDefault();
+    loadDocuments();
   });
 
-  const formatTimestamp = (entry) => {
-    if (entry.registeredAt) {
-      return `Registered ${new Date(entry.registeredAt).toLocaleString()}`;
-    }
-    if (entry.verifiedAt) {
-      return `Verified ${new Date(entry.verifiedAt).toLocaleString()}`;
-    }
-    return "—";
-  };
+  historyTable?.addEventListener("click", handleTableClick);
+  navLogout?.addEventListener("click", async () => {
+    await signOut();
+    window.location.href = "signin.html";
+  });
+}
 
-  renderRows();
-});
-
+if (supabase) {
+  init();
+} else {
+  disableWalletButton();
+}
