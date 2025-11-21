@@ -1,123 +1,89 @@
-﻿# Document Verification Blockchain
+# Document Verification Blockchain
 
-A minimal Ethereum project that anchors document hashes on-chain and lets anyone verify them.
+An end-to-end prototype where universities issue credentials on-chain, store documents off-chain, and expose a browser dApp for students, faculty, and verifiers.
 
-## Prerequisites
+This repo contains:
+- Hardhat workspace (contracts/, scripts/, test/) for the Solidity registry.
+- Production dApp in docs/ (deployed via GitHub Pages) with Supabase Auth/Storage and MetaMask integration.
+- Legacy demos in demo_site/ and verify/ preserved for reference.
 
-- Node.js 18+
-- npm
+---
 
-## Setup
+## Highlights
 
-```
-npm install
-npm run build
-npm run test
-```
+- Role-aware portal – Supabase email/password login. Admins get issuance dashboards; students see issued records. Wallet connect is admin-only.
+- On-chain anchoring – files are hashed locally (Web Crypto SHA-256) and registerDocument stores (docId, docHash, uri) on Sepolia while showing the pending transaction hash.
+- Off-chain storage – issued files upload to a Supabase Storage bucket; metadata (hash, tx hash, file URL, student ID, timestamp) is written to Postgres.
+- Verification UX – anyone can upload a file or paste a hash; the client re-hashes, checks the contract, and shows match status plus download/transaction links.
+- Requests workflow (optional) – students request credentials, admins approve/deny/issue entirely via Supabase tables.
 
-## Local Deployment
+## Smart Contract
 
-1. Start a local Ethereum node:
-   ```
-   npx hardhat node
-   ```
-2. Deploy to that node:
-   ```
-   npm run deploy:local
-   ```
+Located at contracts/DocumentRegistry.sol. Core entrypoints:
+- registerDocument(bytes32 docId, bytes32 docHash, string uri) – stores a fingerprint once (reverts on duplicates).
+- verifyDocument(bytes32 docId, bytes32 docHash) – pure check comparing a provided hash to the stored value.
 
-## Testnet Deployment (Sepolia)
+Deploy with Hardhat:
 
-Create a `.env` file:
+Commands:
+    npm install
+    npm run build
+    npm run test
 
-```
-ALCHEMY_SEPOLIA_URL=https://eth-sepolia.g.alchemy.com/v2/<KEY>
-PRIVATE_KEY=0x<YOUR_PRIVATE_KEY>
-```
+    # local
+    npx hardhat node
+    npm run deploy:local
 
-Then run:
+    # Sepolia (.env needs ALCHEMY_SEPOLIA_URL + PRIVATE_KEY)
+    npm run deploy:sepolia
 
-```
-npm run deploy:sepolia
-```
+---
 
-The script prints the contract address you'll reuse in frontends or APIs.
+## Frontend (docs/)
 
-## Contract Highlights
+GitHub Pages serves everything from docs/. Main pages:
+- signin.html – auth splash for students/admins.
+- admin.html – queue of pending Supabase requests.
+- faculty_staff.html – issuance form (doc ID + student ID + file).
+- admin_request.html / admin_verify.html – admin utilities.
+- my_documents.html – students see issued documents fetched from Supabase.
+- verify.html – public verification (file upload or hash input).
 
-- `registerDocument(docId, docHash, uri)` (issuer-only) records a hash and metadata once.
-- `getDocument(docId)` returns the stored record.
-- `verifyDocument(docId, docHash)` returns `true` if the stored hash matches.
+Open docs/index.html directly during local testing or run npx serve docs for a lightweight dev server.
 
-Document IDs can be any unique string hashed off-chain (for example `sha256(filename + serial)`). Document hashes come from hashing the file contents off-chain before calling the contract.
+---
 
-## GitHub Pages Frontend
+## Supabase Setup
 
-This repository includes a multi-page static interface under `docs/` that GitHub Pages can host.
+1. Set docs/supabase-config.js with your project URL and anon key.
+2. Create users under Supabase Auth and assign roles (admins get role=admin, students get role=student plus studentId). Use SQL similar to the snippets in docs/sql/reset_documents_policies.sql.
+3. Run docs/sql/reset_documents_policies.sql to create the documents table policies (admins insert/select, students select by student_id).
+4. Optionally create the requests table (id, student_id, doc_type, status, file_url, tx_hash, doc_id, doc_hash, notes, timestamps) and add policies so students insert/select their rows and admins can select/update all.
+5. Create a documents storage bucket (public for now). Admin issuance uploads files there and stores the public URL.
 
-1. Deploy the smart contract (local or Sepolia) and copy the deployed address.
-2. Update `docs/js/registry.js` with the deployed contract address if it changes.
-3. Commit and push. In your repository settings, set GitHub Pages to serve from the `docs/` directory.
-4. Open the published URL, connect an Ethereum wallet (MetaMask or equivalent), switch to Sepolia, and interact with the app.
+Supabase Auth sessions live in sessionStorage, so closing the tab requires signing in again. Students never connect a wallet; admins must connect MetaMask on Sepolia.
 
-### Available Pages
+---
 
-- **Home** — overview and quick links.
-- **Verify a Document** — upload a file or paste a pre-computed hash to check against the on-chain fingerprint.
-- **Faculty/Staff** — register new documents (hashes are computed locally; only SHA-256 digests are stored on-chain).
-- **My Documents** — client-side history (stored in `localStorage`) of recently registered or verified items for quick re-checks.
+## GitHub Pages Deployment
 
-All hashing happens in the browser via the Web Crypto API. No document content leaves the client; only hashes and transaction metadata interact with the blockchain.
+The workflow .github/workflows/static.yml uploads the docs/ directory on every push to main. Leave it as-is, ensure GitHub Pages is set to GitHub Actions, and push your changes (including docs/supabase-config.js placeholders). The deploy job will publish automatically.
 
-- **Request** - students submit off-chain requests for documents via Supabase.
-- **Admin** - admins approve/deny and issue documents; issuing hashes the file locally, calls egisterDocument, uploads to Supabase Storage, and updates request status.
+---
 
-All hashing happens in the browser via the Web Crypto API. No document content leaves the client; only hashes and transaction metadata interact with the blockchain.
+## Legacy Folders
 
-## Supabase Integration (Requests + Admin Issuance)
+- demo_site/ – original static walkthrough without Supabase.
+- verify/ – lightweight verification-only site.
 
-The static app now uses Supabase (free tier) for off-chain requests and storage. Do this once:
+They remain untouched but are no longer part of the production deployment.
 
-1. Create a Supabase project; copy the Project URL and anon/public key into docs/supabase-config.js (placeholders are in the file).
-2. Enable Email/Password auth (Auth → Sign In/Providers). Create users (Auth → Users). Set roles in aw_user_meta_data: {"role":"admin"} for admins, {"role":"student"} for students. If the UI won’t edit metadata, run SQL:
-   `
-   update auth.users
-   set raw_user_meta_data = coalesce(raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('role','admin')
-   where id = '<USER_UID>';
-   `
-3. Create the equests table and RLS policies (run in SQL editor):
-   `
-   create extension if not exists pgcrypto;
-   create table if not exists requests (
-     id uuid primary key default gen_random_uuid(),
-     student_id uuid not null,
-     doc_type text not null,
-     status text not null default 'pending',
-     file_url text,
-     tx_hash text,
-     doc_id text,
-     doc_hash text,
-     notes jsonb,
-     created_at timestamptz default now(),
-     issued_at timestamptz,
-     issuer_id uuid
-   );
-   alter table requests enable row level security;
+---
 
-   create policy student_insert on requests
-     for insert with check (student_id = auth.uid());
+## Summary
 
-   create policy student_select_own on requests
-     for select using (student_id = auth.uid());
+1. Deploy DocumentRegistry.sol (local or Sepolia) and point docs/js/registry.js at the new address.
+2. Configure Supabase Auth/Storage following the steps above.
+3. Serve docs/ via GitHub Pages, connect MetaMask as an admin, and issue documents. Students immediately see issued documents, can download from Supabase, and verify on-chain.
 
-   create policy admin_select_all on requests
-     for select using (auth.jwt() -> 'user_metadata' ->> 'role' = 'admin');
-
-   create policy admin_update_all on requests
-     for update using (auth.jwt() -> 'user_metadata' ->> 'role' = 'admin')
-     with check (auth.jwt() -> 'user_metadata' ->> 'role' = 'admin');
-   `
-4. Storage: create a bucket documents (public for the current code) and allow uploads.
-5. Hard-refresh the site. Student flow: equest.html to submit requests and view “My Requests.” Admin flow: dmin.html to approve/deny or issue (upload file → hash → on-chain register → store file/tx in Supabase).
-
-Admin issuance still requires a connected wallet with Sepolia test ETH. Verification remains public and on-chain.
+Only SHA-256 hashes ever touch the blockchain—documents stay private in Supabase Storage yet remain verifiable by anyone holding the file.
